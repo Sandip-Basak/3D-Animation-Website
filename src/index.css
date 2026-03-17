@@ -18,14 +18,12 @@
   --bg-color: var(--color-brand-dark);
   --text-color: var(--color-brand-cream);
   --accent-color: var(--color-brand-gold);
-  --nav-blend: difference;
 }
 
 body.light-mode {
   --bg-color: var(--color-brand-cream);
   --text-color: var(--color-brand-dark);
   --accent-color: var(--color-brand-accent);
-  --nav-blend: normal;
 }
 
 body {
@@ -38,7 +36,100 @@ body {
   transition: background-color 0.8s ease, color 0.8s ease;
 }
 
-/* Ensure smooth transitions for specific elements */
 .transition-theme {
-  transition: background-color 0.8s ease, color 0.8s ease, border-color 0.8s ease, opacity 0.8s ease;
+  transition: background-color 0.8s ease, color 0.8s ease, border-color 0.8s ease;
+}
+
+/* ── Hero: text is ALWAYS on a dark canvas — force cream + shadow ── */
+.hero-text-always-light {
+  color: #FDFBF7 !important;
+  text-shadow: 0 2px 32px rgba(0,0,0,0.7), 0 1px 6px rgba(0,0,0,0.5);
+}
+
+.hero-subtext-always-light {
+  color: rgba(253,251,247,0.85) !important;
+  text-shadow: 0 1px 12px rgba(0,0,0,0.6);
+}
+
+/* ── Navbar transparent + blend in dark; frosted glass in light ── */
+.nav-root {
+  transition: background 0.6s ease, border-color 0.6s ease, backdrop-filter 0.6s ease;
+}
+
+body.light-mode .nav-root {
+  background: rgba(253, 251, 247, 0.82);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.2);
+}
+
+body.light-mode .nav-root a,
+body.light-mode .nav-root div,
+body.light-mode .nav-root button {
+  color: #120e0b;
+}
+
+body:not(.light-mode) .nav-root {
+  mix-blend-mode: difference;
+  color: #FDFBF7;
+}
+
+/* ── Craftsmanship: soft warm linen in light ── */
+body.light-mode .section-craft {
+  background: linear-gradient(150deg, #FDFBF7 0%, #EDE3D6 100%);
+}
+
+/* ── Marquee: rich dark strip so it reads as a strong accent band ── */
+body.light-mode .section-marquee {
+  background: linear-gradient(135deg, #1e0e06 0%, #3a1a08 100%);
+  color: #C5A059;
+  border-top: 1px solid rgba(197, 160, 89, 0.3);
+  border-bottom: 1px solid rgba(197, 160, 89, 0.3);
+}
+
+/* ── Roasting: deep warm linen + gold stat accent bar ── */
+body.light-mode .section-roasting {
+  background: #F2E8D9;
+}
+
+body.light-mode .stat-block {
+  border-left: 3px solid #C5A059;
+  padding-left: 1.5rem;
+}
+
+/* ── Final CTA: clean cream with large decorative quote glyph ── */
+body.light-mode .section-cta {
+  background: #FDFBF7;
+}
+
+/* Big decorative open-quote only in light mode */
+.quote-mark {
+  display: none;
+}
+
+body.light-mode .quote-mark {
+  display: block;
+  font-family: "Playfair Display", serif;
+  font-size: clamp(9rem, 22vw, 20rem);
+  line-height: 0.65;
+  color: rgba(197, 160, 89, 0.15);
+  pointer-events: none;
+  user-select: none;
+  letter-spacing: -0.05em;
+  position: absolute;
+  top: 6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 0;
+}
+
+body.light-mode .author-line {
+  border-bottom: 1px solid rgba(18, 14, 11, 0.15);
+  padding-bottom: 1rem;
+}
+
+/* ── Footer: warm strip in light ── */
+body.light-mode .footer-strip {
+  background: #EDE3D6;
+  border-top: 1px solid rgba(197, 160, 89, 0.35);
 }
