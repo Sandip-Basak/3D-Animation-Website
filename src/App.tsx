@@ -7,9 +7,7 @@ gsap.registerPlugin(ScrollTrigger);
 export default function App() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
-  const heroTextRef = useRef<HTMLDivElement>(null);
   const marqueeRef = useRef<HTMLDivElement>(null);
-  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
 
   useEffect(() => {
     // --- Canvas Sequence Logic ---
@@ -65,34 +63,46 @@ export default function App() {
 
     // --- Animations ---
     const ctx = gsap.context(() => {
-      // 1. Canvas frame scrub
-      gsap.to(sequence, {
-        frame: frameCount - 1,
-        snap: 'frame',
-        ease: 'none',
+      // 1. Master Timeline for Canvas Scrub & Hero Texts
+      const tl = gsap.timeline({
         scrollTrigger: {
           trigger: heroRef.current,
           start: 'top top',
-          end: '+=400%',
-          scrub: 0,
+          end: '+=300%', // Sped up from 400%
+          scrub: 0.5, // Smoother scrub
           pin: true,
-        },
-        onUpdate: render
-      });
-
-      // 2. Hero Text fades out as we scroll deep
-      gsap.to(heroTextRef.current, {
-        opacity: 0,
-        y: -100,
-        scrollTrigger: {
-          trigger: heroRef.current,
-          start: 'top top',
-          end: '+=100%',
-          scrub: true,
         }
       });
 
-      // 3. Marquee Text
+      // Canvas frame scrub spans the entire duration (normalized time 0 to 1)
+      tl.to(sequence, {
+        frame: frameCount - 1,
+        snap: 'frame',
+        ease: 'none',
+        onUpdate: render,
+        duration: 1
+      }, 0);
+
+      // Text 1 (Intro) fades out
+      tl.to('.hero-text-1', { opacity: 0, y: -50, duration: 0.15, ease: 'power2.inOut' }, 0.05);
+      
+      // Text 2 (Brand story) fades in then out
+      tl.fromTo('.hero-text-2', 
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 0.15, ease: 'power2.out' }, 
+        0.30
+      );
+      tl.to('.hero-text-2', { opacity: 0, y: -50, duration: 0.15, ease: 'power2.in' }, 0.60);
+
+      // Text 3 (Finale) fades in then out
+      tl.fromTo('.hero-text-3', 
+        { opacity: 0, y: 50 },
+        { opacity: 1, y: 0, duration: 0.15, ease: 'power2.out' }, 
+        0.75
+      );
+      tl.to('.hero-text-3', { opacity: 0, duration: 0.1 }, 0.95);
+
+      // 2. Marquee Text
       if (marqueeRef.current) {
         gsap.to(marqueeRef.current, {
           xPercent: -30,
@@ -106,30 +116,23 @@ export default function App() {
         });
       }
 
-      // Add hero section to refs tracking color zones
-      if (heroRef.current && !sectionRefs.current.includes(heroRef.current)) {
-        // We prepend since it's the first section
-        sectionRefs.current = [heroRef.current, ...sectionRefs.current];
-      }
-
-      // 4. Section Entrances & Color Zones
-      sectionRefs.current.forEach((section) => {
-        if (!section) return;
-        
-        const bgColor = section.getAttribute('data-bgcolor');
-        const textColor = section.getAttribute('data-textcolor');
+      // 3. Section Entrances & Color Zones
+      const zones = document.querySelectorAll('.color-zone');
+      zones.forEach((zone) => {
+        const bgColor = zone.getAttribute('data-bgcolor');
+        const textColor = zone.getAttribute('data-textcolor');
 
         if (bgColor && textColor) {
           ScrollTrigger.create({
-            trigger: section,
+            trigger: zone,
             start: 'top 50%',
             end: 'bottom 50%',
-            onEnter: () => gsap.to('body', { backgroundColor: bgColor, color: textColor, duration: 0.8 }),
-            onEnterBack: () => gsap.to('body', { backgroundColor: bgColor, color: textColor, duration: 0.8 }),
+            onEnter: () => gsap.to('body', { backgroundColor: bgColor, color: textColor, duration: 0.6, overwrite: 'auto' }),
+            onEnterBack: () => gsap.to('body', { backgroundColor: bgColor, color: textColor, duration: 0.6, overwrite: 'auto' }),
           });
         }
 
-        const elements = section.querySelectorAll('.animate-up');
+        const elements = zone.querySelectorAll('.animate-up');
         if (elements.length > 0) {
           gsap.fromTo(elements, 
             { y: 60, opacity: 0 },
@@ -140,7 +143,7 @@ export default function App() {
               stagger: 0.15, 
               ease: 'power3.out',
               scrollTrigger: {
-                trigger: section,
+                trigger: zone,
                 start: 'top 80%',
               }
             }
@@ -148,7 +151,7 @@ export default function App() {
         }
       });
       
-      // 5. Stat Counter
+      // 4. Stat Counter
       const counters = document.querySelectorAll('.stat-counter');
       counters.forEach((counter) => {
         const target = parseInt(counter.getAttribute('data-target') || '0', 10);
@@ -172,54 +175,68 @@ export default function App() {
     };
   }, []);
 
-  const addToRefs = (el: HTMLElement | null) => {
-    if (el && !sectionRefs.current.includes(el)) {
-      sectionRefs.current.push(el);
-    }
-  };
-
   return (
     <div className="selection:bg-brand-gold selection:text-brand-dark min-h-screen">
       {/* Navigation */}
       <nav className="fixed w-full z-50 top-0 py-6 px-8 md:px-16 flex justify-between items-center mix-blend-difference text-brand-cream">
         <div className="font-serif text-2xl tracking-widest uppercase">Cavinior</div>
-        <div className="hidden md:flex gap-12 text-xs tracking-[0.2em] font-medium uppercase mix-blend-difference">
+        <div className="hidden md:flex gap-12 text-xs tracking-[0.2em] font-medium uppercase mix-blend-difference z-20">
           <a href="#story" className="hover:opacity-60 transition-opacity">Story</a>
           <a href="#craft" className="hover:opacity-60 transition-opacity">Craft</a>
           <a href="#collections" className="hover:opacity-60 transition-opacity">Collections</a>
         </div>
-        <button className="border border-current px-8 py-3 text-xs tracking-widest uppercase hover:bg-brand-cream hover:text-brand-dark transition-colors mix-blend-difference cursor-pointer">
+        <button className="border border-current px-8 py-3 text-xs tracking-widest uppercase hover:bg-brand-cream hover:text-brand-dark transition-colors mix-blend-difference cursor-pointer z-20">
           Shop
         </button>
       </nav>
 
       {/* Hero Section */}
-      <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden" data-bgcolor="var(--bg-dark)" data-textcolor="var(--text-on-dark)">
+      <section ref={heroRef} className="color-zone relative h-screen flex items-center justify-center overflow-hidden" data-bgcolor="var(--bg-dark)" data-textcolor="var(--text-on-dark)">
         <canvas 
           ref={canvasRef} 
           className="absolute inset-0 w-full h-full object-cover z-0"
         />
-        <div className="absolute inset-0 bg-black/40 z-0"></div>
+        <div className="absolute inset-0 bg-black/60 z-0 pointer-events-none"></div>
 
-        <div ref={heroTextRef} className="relative z-10 w-full px-8 md:px-16 flex flex-col items-center justify-center text-center mt-20">
-          <div className="text-[0.7rem] text-brand-gold uppercase tracking-[0.3em] font-medium mb-8">001 / Introduction</div>
-          <h1 className="font-serif text-[clamp(4rem,10vw,12rem)] leading-[0.85] font-bold tracking-tight text-brand-cream drop-shadow-2xl">
-            PURE<br />
-            <span className="italic font-normal">INDULGENCE</span>
-          </h1>
-          <p className="mt-12 text-sm md:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed text-brand-cream/90 drop-shadow-md">
-            Unveiling the rarest cacao. A masterpiece sculpted in chocolate, refined through 192 hours of artisanal conching.
-          </p>
+        <div className="absolute inset-0 z-10 w-full px-8 md:px-16 flex items-center justify-center pointer-events-none mt-16">
+          {/* Text Sequence elements */}
+          
+          <div className="hero-text-1 absolute w-full max-w-4xl mx-auto flex flex-col items-center text-center">
+            <div className="text-[0.7rem] text-brand-gold uppercase tracking-[0.3em] font-medium mb-8">001 / Introduction</div>
+            <h1 className="font-serif text-[clamp(4rem,10vw,12rem)] leading-[0.85] font-bold tracking-tight text-brand-cream drop-shadow-2xl">
+              PURE<br />
+              <span className="italic font-normal text-brand-gold">INDULGENCE</span>
+            </h1>
+            <p className="mt-12 text-sm md:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed text-brand-cream/90 drop-shadow-md">
+              Unveiling the rarest cacao. A masterpiece sculpted in chocolate, refined through 192 hours of artisanal conching.
+            </p>
+          </div>
+
+          <div className="hero-text-2 absolute w-full max-w-4xl mx-auto flex flex-col items-center text-center opacity-0 translate-y-10">
+            <h2 className="font-serif text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-bold tracking-tight text-brand-cream drop-shadow-2xl mb-8">
+              UNCOMPROMISING<br/>QUALITY
+            </h2>
+            <p className="text-sm md:text-lg max-w-xl mx-auto font-light tracking-wide leading-relaxed text-brand-cream/90 drop-shadow-md">
+              Meticulously handcrafted from bean to bar. Every step of our process is dedicated to preserving the pristine notes of wild cacao, bringing you an unadulterated sensory experience.
+            </p>
+          </div>
+
+          <div className="hero-text-3 absolute w-full max-w-4xl mx-auto flex flex-col items-center text-center opacity-0 translate-y-10">
+            <h2 className="font-serif text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-bold tracking-tight text-brand-gold drop-shadow-2xl mb-8 italic">
+              A Legacy of Taste
+            </h2>
+            <p className="text-sm md:text-lg max-w-xl mx-auto font-light tracking-wide leading-relaxed text-brand-cream/90 drop-shadow-md">
+              Experience the profound depth and complexity born from generations of artisanal mastery. Welcome to the world of Cavinior.
+            </p>
+          </div>
+          
         </div>
       </section>
 
-      {/* spacer to handle the pin end */}
-      <div className="h-[400vh]"></div>
-
       {/* Craftsmanship: Left-Aligned Split */}
-      <section ref={addToRefs} id="craft" className="py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center" data-bgcolor="var(--bg-light)" data-textcolor="var(--text-on-light)">
+      <section id="craft" className="color-zone py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center" data-bgcolor="var(--bg-light)" data-textcolor="var(--text-on-light)">
         <div className="order-2 md:order-1 relative aspect-[3/4] overflow-hidden w-full max-w-md mx-auto md:mr-auto">
-          <div className="absolute inset-0 bg-brand-brown/10 z-10 mix-blend-multiply border border-transparent"></div>
+          <div className="absolute inset-0 bg-brand-brown/10 z-10 mix-blend-multiply border border-transparent pointer-events-none"></div>
           <img 
             src="https://picsum.photos/seed/cacao-pod/800/1200" 
             alt="Single Origin Cacao" 
@@ -240,7 +257,7 @@ export default function App() {
       </section>
 
       {/* Marquee Full-Width */}
-      <section className="py-32 overflow-hidden bg-brand-accent text-brand-gold border-y border-brand-dark border-opacity-20" data-bgcolor="var(--bg-accent)" data-textcolor="var(--text-on-dark)" ref={addToRefs}>
+      <section className="color-zone py-32 overflow-hidden bg-brand-accent text-brand-gold border-y border-brand-dark border-opacity-20" data-bgcolor="var(--bg-accent)" data-textcolor="var(--text-on-dark)">
         <div className="relative flex whitespace-nowrap">
           <div ref={marqueeRef} className="flex gap-16 md:gap-32 px-16 will-change-transform font-serif italic text-[12vw] leading-none opacity-90">
              <span>MASTERFUL ROASTING</span>
@@ -252,7 +269,7 @@ export default function App() {
       </section>
 
       {/* Roasting: Right-Aligned Split with Stats */}
-      <section ref={addToRefs} className="py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-12 gap-16 items-center" data-bgcolor="var(--bg-dark)" data-textcolor="var(--text-on-dark)">
+      <section className="color-zone py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-12 gap-16 items-center" data-bgcolor="var(--bg-dark)" data-textcolor="var(--text-on-dark)">
         <div className="md:col-span-5 md:col-start-2 flex flex-col justify-center">
           <div className="text-[0.7rem] text-brand-cream/50 uppercase tracking-[0.3em] font-medium mb-12 animate-up">003 / Process</div>
           
@@ -282,7 +299,7 @@ export default function App() {
       </section>
 
       {/* Centered Final CTA / Testimonial */}
-      <section ref={addToRefs} className="min-h-screen py-32 px-8 flex flex-col items-center justify-center text-center bg-brand-light" data-bgcolor="var(--bg-light)" data-textcolor="var(--text-on-light)">
+      <section className="color-zone min-h-screen py-32 px-8 flex flex-col items-center justify-center text-center bg-brand-light" data-bgcolor="var(--bg-light)" data-textcolor="var(--text-on-light)">
         <div className="text-[0.7rem] text-brand-dark/50 uppercase tracking-[0.3em] font-medium mb-16 animate-up">004 / Finale</div>
         
         <div className="font-serif text-[clamp(2rem,5vw,4rem)] lg:text-6xl font-medium leading-tight max-w-4xl mx-auto text-brand-dark mb-16 animate-up">
