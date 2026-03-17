@@ -1,195 +1,312 @@
-import { motion } from 'motion/react';
-import { ChevronRight, Star } from 'lucide-react';
+import { useEffect, useRef } from 'react';
+import gsap from 'gsap';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+
+gsap.registerPlugin(ScrollTrigger);
 
 export default function App() {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const heroRef = useRef<HTMLElement>(null);
+  const heroTextRef = useRef<HTMLDivElement>(null);
+  const marqueeRef = useRef<HTMLDivElement>(null);
+  const sectionRefs = useRef<(HTMLElement | null)[]>([]);
+
+  useEffect(() => {
+    // --- Canvas Sequence Logic ---
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const context = canvas.getContext('2d');
+    if (!context) return;
+
+    const frameCount = 192;
+    const currentFrame = (index: number) => (
+      `/chocolate_imgs/ezgif-frame-${(index + 1).toString().padStart(3, '0')}.jpg`
+    );
+
+    const images: HTMLImageElement[] = [];
+    const sequence = { frame: 0 };
+
+    for (let i = 0; i < frameCount; i++) {
+      const img = new Image();
+      img.src = currentFrame(i);
+      images.push(img);
+    }
+
+    const handleResize = () => {
+      if (!canvas) return;
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      render();
+    };
+    
+    handleResize();
+
+    function render() {
+      if (!canvas || !context) return;
+      context.clearRect(0, 0, canvas.width, canvas.height);
+      const img = images[sequence.frame];
+      if (!img || !img.complete) return;
+      
+      const hRatio = canvas.width / img.width;
+      const vRatio = canvas.height / img.height;
+      const ratio = Math.max(hRatio, vRatio);
+      const centerShift_x = (canvas.width - img.width * ratio) / 2;
+      const centerShift_y = (canvas.height - img.height * ratio) / 2;  
+      
+      context.drawImage(
+        img, 
+        0, 0, img.width, img.height,
+        centerShift_x, centerShift_y, img.width * ratio, img.height * ratio
+      );
+    }
+    
+    images[0].onload = render;
+    window.addEventListener('resize', handleResize);
+
+    // --- Animations ---
+    const ctx = gsap.context(() => {
+      // 1. Canvas frame scrub
+      gsap.to(sequence, {
+        frame: frameCount - 1,
+        snap: 'frame',
+        ease: 'none',
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: '+=400%',
+          scrub: 0,
+          pin: true,
+        },
+        onUpdate: render
+      });
+
+      // 2. Hero Text fades out as we scroll deep
+      gsap.to(heroTextRef.current, {
+        opacity: 0,
+        y: -100,
+        scrollTrigger: {
+          trigger: heroRef.current,
+          start: 'top top',
+          end: '+=100%',
+          scrub: true,
+        }
+      });
+
+      // 3. Marquee Text
+      if (marqueeRef.current) {
+        gsap.to(marqueeRef.current, {
+          xPercent: -30,
+          ease: 'none',
+          scrollTrigger: {
+            trigger: marqueeRef.current.parentElement,
+            start: 'top bottom',
+            end: 'bottom top',
+            scrub: true
+          }
+        });
+      }
+
+      // Add hero section to refs tracking color zones
+      if (heroRef.current && !sectionRefs.current.includes(heroRef.current)) {
+        // We prepend since it's the first section
+        sectionRefs.current = [heroRef.current, ...sectionRefs.current];
+      }
+
+      // 4. Section Entrances & Color Zones
+      sectionRefs.current.forEach((section) => {
+        if (!section) return;
+        
+        const bgColor = section.getAttribute('data-bgcolor');
+        const textColor = section.getAttribute('data-textcolor');
+
+        if (bgColor && textColor) {
+          ScrollTrigger.create({
+            trigger: section,
+            start: 'top 50%',
+            end: 'bottom 50%',
+            onEnter: () => gsap.to('body', { backgroundColor: bgColor, color: textColor, duration: 0.8 }),
+            onEnterBack: () => gsap.to('body', { backgroundColor: bgColor, color: textColor, duration: 0.8 }),
+          });
+        }
+
+        const elements = section.querySelectorAll('.animate-up');
+        if (elements.length > 0) {
+          gsap.fromTo(elements, 
+            { y: 60, opacity: 0 },
+            { 
+              y: 0, 
+              opacity: 1, 
+              duration: 1, 
+              stagger: 0.15, 
+              ease: 'power3.out',
+              scrollTrigger: {
+                trigger: section,
+                start: 'top 80%',
+              }
+            }
+          );
+        }
+      });
+      
+      // 5. Stat Counter
+      const counters = document.querySelectorAll('.stat-counter');
+      counters.forEach((counter) => {
+        const target = parseInt(counter.getAttribute('data-target') || '0', 10);
+        gsap.to(counter, {
+          innerHTML: target,
+          duration: 2.5,
+          snap: { innerHTML: 1 },
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: counter,
+            start: 'top 85%'
+          }
+        });
+      });
+
+    });
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+      ctx.revert();
+    };
+  }, []);
+
+  const addToRefs = (el: HTMLElement | null) => {
+    if (el && !sectionRefs.current.includes(el)) {
+      sectionRefs.current.push(el);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-brand-dark text-brand-cream font-sans selection:bg-brand-gold selection:text-brand-dark">
+    <div className="selection:bg-brand-gold selection:text-brand-dark min-h-screen">
       {/* Navigation */}
-      <nav className="fixed w-full z-50 top-0 py-6 px-8 md:px-16 flex justify-between items-center bg-brand-dark/80 backdrop-blur-md border-b border-brand-gold/10">
-        <div className="font-serif text-2xl tracking-widest text-brand-gold uppercase">Cavinior</div>
-        <div className="hidden md:flex gap-8 text-sm tracking-widest uppercase text-brand-cream-muted">
-          <a href="#story" className="hover:text-brand-gold transition-colors">Our Story</a>
-          <a href="#craft" className="hover:text-brand-gold transition-colors">Craftsmanship</a>
-          <a href="#collections" className="hover:text-brand-gold transition-colors">Collections</a>
+      <nav className="fixed w-full z-50 top-0 py-6 px-8 md:px-16 flex justify-between items-center mix-blend-difference text-brand-cream">
+        <div className="font-serif text-2xl tracking-widest uppercase">Cavinior</div>
+        <div className="hidden md:flex gap-12 text-xs tracking-[0.2em] font-medium uppercase mix-blend-difference">
+          <a href="#story" className="hover:opacity-60 transition-opacity">Story</a>
+          <a href="#craft" className="hover:opacity-60 transition-opacity">Craft</a>
+          <a href="#collections" className="hover:opacity-60 transition-opacity">Collections</a>
         </div>
-        <button className="border border-brand-gold text-brand-gold px-6 py-2 text-sm tracking-widest uppercase hover:bg-brand-gold hover:text-brand-dark transition-colors">
-          Shop Now
+        <button className="border border-current px-8 py-3 text-xs tracking-widest uppercase hover:bg-brand-cream hover:text-brand-dark transition-colors mix-blend-difference cursor-pointer">
+          Shop
         </button>
       </nav>
 
       {/* Hero Section */}
-      <section className="relative min-h-screen flex items-center justify-center px-8 pt-24 overflow-hidden">
-        {/* Background image with overlay */}
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://picsum.photos/seed/chocolate-dark/1920/1080?blur=2" 
-            alt="Dark chocolate background" 
-            className="w-full h-full object-cover opacity-30"
-            referrerPolicy="no-referrer"
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-brand-dark/50 via-brand-dark/80 to-brand-dark"></div>
-        </div>
+      <section ref={heroRef} className="relative h-screen flex items-center justify-center overflow-hidden" data-bgcolor="var(--bg-dark)" data-textcolor="var(--text-on-dark)">
+        <canvas 
+          ref={canvasRef} 
+          className="absolute inset-0 w-full h-full object-cover z-0"
+        />
+        <div className="absolute inset-0 bg-black/40 z-0"></div>
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center">
-          <motion.h1 
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.2 }}
-            className="font-serif text-5xl md:text-7xl lg:text-8xl font-light leading-tight mb-6"
-          >
-            The Art of <br/>
-            <span className="text-brand-gold italic">Pure Indulgence</span>
-          </motion.h1>
-          
-          <motion.p 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.5 }}
-            className="text-lg md:text-xl text-brand-cream-muted max-w-2xl mx-auto mb-10 font-light tracking-wide leading-relaxed"
-          >
-            Handcrafted artisan chocolate made from the world's rarest cacao beans. A symphony of flavor in every bite.
-          </motion.p>
-          
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1, delay: 0.8 }}
-          >
-            <button className="bg-brand-gold text-brand-dark px-10 py-4 text-sm tracking-widest uppercase hover:bg-brand-gold-light transition-colors flex items-center gap-2 mx-auto">
-              Discover the Collection <ChevronRight size={16} />
-            </button>
-          </motion.div>
-        </div>
-      </section>
-
-      {/* Features / Craftsmanship */}
-      <section id="craft" className="py-32 px-8 md:px-16 bg-brand-brown relative">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-24">
-            <h2 className="font-serif text-4xl md:text-5xl text-brand-gold mb-6">Masterful Craftsmanship</h2>
-            <div className="w-12 h-px bg-brand-gold mx-auto"></div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-16">
-            {[
-              {
-                title: "Ethical Sourcing",
-                desc: "We partner directly with small-scale farmers in Ecuador and Madagascar, ensuring fair wages and sustainable practices.",
-                img: "https://picsum.photos/seed/cacao/800/1200"
-              },
-              {
-                title: "Small Batch Roasting",
-                desc: "Each batch is meticulously roasted to bring out the unique flavor profile and delicate notes of the specific cacao origin.",
-                img: "https://picsum.photos/seed/roast/800/1200"
-              },
-              {
-                title: "Artisan Tempering",
-                desc: "Our master chocolatiers hand-temper every bar to achieve the perfect snap, glossy finish, and smooth melt.",
-                img: "https://picsum.photos/seed/temper/800/1200"
-              }
-            ].map((feature, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true, margin: "-100px" }}
-                transition={{ duration: 0.8, delay: idx * 0.2 }}
-                className="group cursor-pointer"
-              >
-                <div className="relative overflow-hidden aspect-[3/4] mb-8">
-                  <img 
-                    src={feature.img} 
-                    alt={feature.title}
-                    className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-80 group-hover:opacity-100"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="absolute inset-0 border border-brand-gold/20 m-4 pointer-events-none"></div>
-                </div>
-                <h3 className="font-serif text-2xl text-brand-gold mb-4">{feature.title}</h3>
-                <p className="text-brand-cream-muted font-light leading-relaxed text-sm">
-                  {feature.desc}
-                </p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials */}
-      <section className="py-32 px-8 md:px-16 bg-brand-dark">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="font-serif text-4xl md:text-5xl text-brand-gold mb-20">A Taste of Perfection</h2>
-          
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-12">
-            {[
-              {
-                quote: "The most exquisite chocolate I have ever tasted. The depth of flavor in the 85% dark is simply unparalleled.",
-                author: "Eleanor V.",
-                role: "Culinary Critic"
-              },
-              {
-                quote: "Cavinior has redefined luxury chocolate. From the elegant packaging to the flawless snap, it's a masterpiece.",
-                author: "James M.",
-                role: "Connoisseur"
-              }
-            ].map((testimonial, idx) => (
-              <motion.div 
-                key={idx}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.6, delay: idx * 0.2 }}
-                className="p-10 border border-brand-gold/10 bg-brand-brown/30 relative"
-              >
-                <div className="flex justify-center gap-1 mb-6 text-brand-gold">
-                  {[...Array(5)].map((_, i) => <Star key={i} size={14} fill="currentColor" />)}
-                </div>
-                <p className="font-serif text-xl md:text-2xl text-brand-cream-muted italic mb-8 leading-relaxed">
-                  "{testimonial.quote}"
-                </p>
-                <div>
-                  <div className="text-brand-gold tracking-widest uppercase text-sm mb-1">{testimonial.author}</div>
-                  <div className="text-brand-cream-muted/50 text-xs uppercase tracking-wider">{testimonial.role}</div>
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Final CTA */}
-      <section className="py-32 px-8 md:px-16 bg-brand-brown relative overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <img 
-            src="https://picsum.photos/seed/luxury-box/1920/1080" 
-            alt="Chocolate box" 
-            className="w-full h-full object-cover opacity-10"
-            referrerPolicy="no-referrer"
-          />
-        </div>
-        <div className="relative z-10 max-w-3xl mx-auto text-center">
-          <h2 className="font-serif text-5xl md:text-6xl text-brand-gold mb-8">Elevate Your Senses</h2>
-          <p className="text-brand-cream-muted text-lg mb-12 font-light">
-            Join our exclusive list to receive early access to limited edition seasonal collections and private tasting events.
+        <div ref={heroTextRef} className="relative z-10 w-full px-8 md:px-16 flex flex-col items-center justify-center text-center mt-20">
+          <div className="text-[0.7rem] text-brand-gold uppercase tracking-[0.3em] font-medium mb-8">001 / Introduction</div>
+          <h1 className="font-serif text-[clamp(4rem,10vw,12rem)] leading-[0.85] font-bold tracking-tight text-brand-cream drop-shadow-2xl">
+            PURE<br />
+            <span className="italic font-normal">INDULGENCE</span>
+          </h1>
+          <p className="mt-12 text-sm md:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed text-brand-cream/90 drop-shadow-md">
+            Unveiling the rarest cacao. A masterpiece sculpted in chocolate, refined through 192 hours of artisanal conching.
           </p>
-          <form className="flex flex-col md:flex-row gap-4 justify-center max-w-md mx-auto">
-            <input 
-              type="email" 
-              placeholder="Your email address" 
-              className="bg-transparent border border-brand-gold/30 px-6 py-4 text-brand-cream focus:outline-none focus:border-brand-gold w-full placeholder:text-brand-cream-muted/50"
-            />
-            <button type="button" className="bg-brand-gold text-brand-dark px-8 py-4 text-sm tracking-widest uppercase hover:bg-brand-gold-light transition-colors whitespace-nowrap">
-              Subscribe
-            </button>
-          </form>
         </div>
+      </section>
+
+      {/* spacer to handle the pin end */}
+      <div className="h-[400vh]"></div>
+
+      {/* Craftsmanship: Left-Aligned Split */}
+      <section ref={addToRefs} id="craft" className="py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center" data-bgcolor="var(--bg-light)" data-textcolor="var(--text-on-light)">
+        <div className="order-2 md:order-1 relative aspect-[3/4] overflow-hidden w-full max-w-md mx-auto md:mr-auto">
+          <div className="absolute inset-0 bg-brand-brown/10 z-10 mix-blend-multiply border border-transparent"></div>
+          <img 
+            src="https://picsum.photos/seed/cacao-pod/800/1200" 
+            alt="Single Origin Cacao" 
+            className="w-full h-full object-cover animate-up"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+        <div className="order-1 md:order-2 flex flex-col justify-center">
+          <div className="text-[0.7rem] text-brand-accent uppercase tracking-[0.3em] font-medium mb-12 animate-up">002 / Provenance</div>
+          <h2 className="font-serif text-5xl md:text-7xl font-bold leading-[0.9] text-brand-dark mb-10 animate-up">
+            Ethical <br/>Sourcing
+          </h2>
+          <p className="text-lg md:text-xl font-light text-brand-dark/80 leading-relaxed max-w-lg mb-12 animate-up">
+            We partner exclusively with sustainable, single-estate farms in Ecuador and Madagascar. No intermediaries, just pure honor to the land and the farmer.
+          </p>
+          <div className="h-px w-24 bg-brand-dark/20 animate-up"></div>
+        </div>
+      </section>
+
+      {/* Marquee Full-Width */}
+      <section className="py-32 overflow-hidden bg-brand-accent text-brand-gold border-y border-brand-dark border-opacity-20" data-bgcolor="var(--bg-accent)" data-textcolor="var(--text-on-dark)" ref={addToRefs}>
+        <div className="relative flex whitespace-nowrap">
+          <div ref={marqueeRef} className="flex gap-16 md:gap-32 px-16 will-change-transform font-serif italic text-[12vw] leading-none opacity-90">
+             <span>MASTERFUL ROASTING</span>
+             <span>FINEST CACAO</span>
+             <span>MASTERFUL ROASTING</span>
+             <span>FINEST CACAO</span>
+          </div>
+        </div>
+      </section>
+
+      {/* Roasting: Right-Aligned Split with Stats */}
+      <section ref={addToRefs} className="py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-12 gap-16 items-center" data-bgcolor="var(--bg-dark)" data-textcolor="var(--text-on-dark)">
+        <div className="md:col-span-5 md:col-start-2 flex flex-col justify-center">
+          <div className="text-[0.7rem] text-brand-cream/50 uppercase tracking-[0.3em] font-medium mb-12 animate-up">003 / Process</div>
+          
+          <div className="mb-16 animate-up">
+            <div className="font-serif text-[5rem] leading-none text-brand-gold mb-2">
+              <span className="stat-counter" data-target="192">0</span><span className="text-2xl ml-2 text-brand-cream">hrs</span>
+            </div>
+            <div className="text-sm uppercase tracking-widest text-brand-cream/60 mt-2">Artisanal Conching</div>
+          </div>
+          
+          <h2 className="font-serif text-5xl font-bold leading-[1.1] text-brand-cream mb-8 animate-up">
+            A symphony of <br/>temperature & time
+          </h2>
+          <p className="text-lg font-light text-brand-cream/70 leading-relaxed max-w-md animate-up">
+            Small batch roasting unlocks the volatile aromatics hidden within raw cacao. Each harvest requires a unique roasting profile to reveal its innermost character.
+          </p>
+        </div>
+        
+        <div className="md:col-span-6 overflow-hidden aspect-[4/5] animate-up shadow-2xl">
+          <img 
+            src="https://picsum.photos/seed/roast-beans/1200/1500" 
+            alt="Roasting Cacao Beans" 
+            className="w-full h-full object-cover"
+            referrerPolicy="no-referrer"
+          />
+        </div>
+      </section>
+
+      {/* Centered Final CTA / Testimonial */}
+      <section ref={addToRefs} className="min-h-screen py-32 px-8 flex flex-col items-center justify-center text-center bg-brand-light" data-bgcolor="var(--bg-light)" data-textcolor="var(--text-on-light)">
+        <div className="text-[0.7rem] text-brand-dark/50 uppercase tracking-[0.3em] font-medium mb-16 animate-up">004 / Finale</div>
+        
+        <div className="font-serif text-[clamp(2rem,5vw,4rem)] lg:text-6xl font-medium leading-tight max-w-4xl mx-auto text-brand-dark mb-16 animate-up">
+          "A texture so ethereal it transcends chocolate. The depth of flavor is simply unparalleled in modern confectionery."
+        </div>
+        
+        <div className="flex flex-col items-center animate-up mb-24">
+          <div className="uppercase tracking-widest text-xs font-bold text-brand-dark mb-2">Eleanor Vance</div>
+          <div className="text-[0.65rem] uppercase tracking-[0.3em] text-brand-dark/50">Culinary Critic</div>
+        </div>
+        
+        <button className="relative group overflow-hidden border border-brand-dark text-brand-dark px-12 py-5 text-sm uppercase tracking-[0.2em] animate-up cursor-pointer">
+          <span className="relative z-10 transition-colors duration-500 group-hover:text-brand-cream">Experience Cavinior</span>
+          <div className="absolute inset-0 bg-brand-dark translate-y-full group-hover:translate-y-0 transition-transform duration-500 ease-[cubic-bezier(0.19,1,0.22,1)] z-0"></div>
+        </button>
       </section>
 
       {/* Footer */}
-      <footer className="py-12 px-8 md:px-16 bg-brand-dark border-t border-brand-gold/10 text-center md:text-left flex flex-col md:flex-row justify-between items-center gap-6">
-        <div className="font-serif text-xl tracking-widest text-brand-gold uppercase">Cavinior</div>
-        <div className="text-brand-cream-muted/50 text-xs tracking-widest uppercase">
-          &copy; {new Date().getFullYear()} Cavinior Artisan Chocolate. All rights reserved.
+      <footer className="py-16 px-8 md:px-16 flex flex-col md:flex-row justify-between items-center border-t border-brand-dark/10" style={{ backgroundColor: 'var(--bg-light)', color: 'var(--text-on-light)' }}>
+        <div className="font-serif text-2xl uppercase tracking-widest mb-8 md:mb-0 text-brand-dark">Cavinior</div>
+        <div className="flex gap-8 text-[0.65rem] uppercase tracking-[0.3em] font-medium text-brand-dark/60">
+          <a href="#" className="hover:text-brand-dark transition-colors">Instagram</a>
+          <a href="#" className="hover:text-brand-dark transition-colors">Journal</a>
+          <a href="#" className="hover:text-brand-dark transition-colors">Terms</a>
         </div>
       </footer>
     </div>
