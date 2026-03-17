@@ -1,0 +1,19 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand-dark: #1A110B;
+  --color-brand-brown: #2C1E16;
+  --color-brand-gold: #C5A059;
+  --color-brand-gold-light: #E2C78A;
+  --color-brand-cream: #FDFBF7;
+  --color-brand-cream-muted: #E8E0D5;
+
+  --font-serif: "Cormorant Garamond", serif;
+  --font-sans: "Inter", sans-serif;
+}
+
+body {
+  background-color: var(--color-brand-dark);
+  color: var(--color-brand-cream);
+  font-family: var(--font-sans);
+}
