@@ -169,31 +169,31 @@ export default function App() {
             <div className="hero-text-always-light text-[0.7rem] !text-brand-gold uppercase tracking-[0.3em] font-medium mb-8 [text-shadow:0_1px_8px_rgba(0,0,0,0.5)]">
               001 / Introduction
             </div>
-            <h1 className="hero-text-always-light font-serif text-[clamp(4rem,10vw,12rem)] leading-[0.85] font-bold tracking-tight">
+            <h1 className="hero-text-always-light font-serif text-[clamp(2.4rem,8vw,12rem)] leading-[0.85] font-bold tracking-tight">
               PURE<br />
               <span className="italic font-normal !text-brand-gold">INDULGENCE</span>
             </h1>
-            <p className="hero-subtext-always-light mt-12 text-sm md:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed">
+            <p className="hero-subtext-always-light mt-6 md:mt-12 text-xs md:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed px-2">
               Unveiling the rarest cacao. A masterpiece sculpted in chocolate, refined through 192 hours of artisanal conching.
             </p>
           </div>
 
           {/* Text 2 */}
           <div className="hero-text-2 absolute w-full max-w-4xl px-8 mx-auto flex flex-col items-center text-center opacity-0 translate-y-10">
-            <h2 className="hero-text-always-light font-serif text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-bold tracking-tight mb-8">
+            <h2 className="hero-text-always-light font-serif text-[clamp(1.9rem,6.5vw,8rem)] leading-[0.9] font-bold tracking-tight mb-6 md:mb-8">
               UNCOMPROMISING<br />QUALITY
             </h2>
-            <p className="hero-subtext-always-light text-sm md:text-lg max-w-xl mx-auto font-light tracking-wide leading-relaxed">
+            <p className="hero-subtext-always-light text-xs md:text-lg max-w-xl mx-auto font-light tracking-wide leading-relaxed px-2">
               Meticulously handcrafted from bean to bar. Every step of our process is dedicated to preserving the pristine notes of wild cacao.
             </p>
           </div>
 
           {/* Text 3 */}
           <div className="hero-text-3 absolute w-full max-w-4xl px-8 mx-auto flex flex-col items-center text-center opacity-0 translate-y-10">
-            <h2 className="hero-text-always-light font-serif text-[clamp(3rem,8vw,8rem)] leading-[0.9] font-bold tracking-tight !text-brand-gold italic mb-8">
+            <h2 className="hero-text-always-light font-serif text-[clamp(2rem,7vw,8rem)] leading-[0.9] font-bold tracking-tight !text-brand-gold italic mb-6 md:mb-8">
               A Legacy of Taste
             </h2>
-            <p className="hero-subtext-always-light text-sm md:text-lg max-w-xl mx-auto font-light tracking-wide leading-relaxed">
+            <p className="hero-subtext-always-light text-xs md:text-lg max-w-xl mx-auto font-light tracking-wide leading-relaxed px-2">
               Experience the profound depth born from generations of artisanal mastery. Welcome to the world of Cavinior.
             </p>
           </div>
@@ -201,7 +201,7 @@ export default function App() {
       </section>
 
       {/* ── Craftsmanship ── */}
-      <section id="craft" className="section-craft animate-section py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-16 md:gap-32 items-center transition-theme">
+      <section id="craft" className="section-craft animate-section py-20 md:py-48 px-6 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-32 items-center transition-theme">
         <div className="order-2 md:order-1 relative aspect-[3/4] overflow-hidden w-full max-w-md mx-auto md:mr-auto">
           <img
             src="https://picsum.photos/seed/cacao-pod/800/1200"
@@ -213,10 +213,10 @@ export default function App() {
           <div className="text-[0.7rem] text-brand-gold uppercase tracking-[0.3em] font-medium mb-12 animate-up">
             002 / Provenance
           </div>
-          <h2 className="font-serif text-5xl md:text-7xl font-bold leading-[0.9] mb-10 animate-up">
+          <h2 className="font-serif text-4xl sm:text-5xl md:text-7xl font-bold leading-[0.9] mb-8 md:mb-10 animate-up">
             Ethical<br />Sourcing
           </h2>
-          <p className="text-lg md:text-xl font-light opacity-75 leading-relaxed max-w-lg mb-12 animate-up">
+          <p className="text-base md:text-xl font-light opacity-75 leading-relaxed max-w-lg mb-10 md:mb-12 animate-up">
             We partner exclusively with sustainable, single-estate farms in Ecuador and Madagascar. No intermediaries — just pure honor to the land and the farmer.
           </p>
           <div className="h-px w-24 bg-brand-gold opacity-40 animate-up" />
@@ -224,7 +224,7 @@ export default function App() {
       </section>
 
       {/* ── Marquee ── */}
-      <section className="section-marquee py-32 overflow-hidden bg-brand-accent text-brand-gold transition-theme">
+      <section className="section-marquee py-16 md:py-32 overflow-hidden bg-brand-accent text-brand-gold transition-theme">
         <div className="relative flex whitespace-nowrap">
           <div ref={marqueeRef} className="flex gap-16 md:gap-32 px-16 will-change-transform font-serif italic text-[12vw] leading-none opacity-90">
             <span>MASTERFUL ROASTING</span>
@@ -236,24 +236,24 @@ export default function App() {
       </section>
 
       {/* ── Roasting ── */}
-      <section className="section-roasting animate-section py-32 md:py-48 px-8 md:px-16 grid grid-cols-1 md:grid-cols-12 gap-16 items-center transition-theme">
+      <section className="section-roasting animate-section py-20 md:py-48 px-6 md:px-16 grid grid-cols-1 md:grid-cols-12 gap-12 md:gap-16 items-center transition-theme">
         <div className="md:col-span-5 md:col-start-2 flex flex-col justify-center">
-          <div className="text-[0.7rem] uppercase tracking-[0.3em] font-medium mb-12 animate-up opacity-50">
+          <div className="text-[0.7rem] uppercase tracking-[0.3em] font-medium mb-8 md:mb-12 animate-up opacity-50">
             003 / Process
           </div>
 
           <div className="stat-block mb-16 animate-up">
-            <div className="font-serif text-[5rem] leading-none text-brand-gold mb-2">
+            <div className="font-serif text-[clamp(3.5rem,12vw,5rem)] leading-none text-brand-gold mb-2">
               <span className="stat-counter" data-target="192">0</span>
-              <span className="text-2xl ml-2 opacity-60">hrs</span>
+              <span className="text-xl md:text-2xl ml-2 opacity-60">hrs</span>
             </div>
             <div className="text-sm uppercase tracking-widest opacity-60 mt-2">Artisanal Conching</div>
           </div>
 
-          <h2 className="font-serif text-5xl font-bold leading-[1.1] mb-8 animate-up">
+          <h2 className="font-serif text-4xl sm:text-5xl font-bold leading-[1.1] mb-6 md:mb-8 animate-up">
             A symphony of<br />temperature &amp; time
           </h2>
-          <p className="text-lg font-light opacity-70 leading-relaxed max-w-md animate-up">
+          <p className="text-base md:text-lg font-light opacity-70 leading-relaxed max-w-md animate-up">
             Small batch roasting unlocks the volatile aromatics hidden within raw cacao. Each harvest demands a unique roasting profile to reveal its innermost character.
           </p>
         </div>
@@ -268,16 +268,16 @@ export default function App() {
       </section>
 
       {/* ── Final CTA / Testimonial ── */}
-      <section className="section-cta animate-section relative min-h-screen py-32 px-8 flex flex-col items-center justify-center text-center overflow-hidden transition-theme">
+      <section className="section-cta animate-section relative py-24 md:py-40 px-6 md:px-8 flex flex-col items-center justify-center text-center overflow-hidden transition-theme">
         {/* Decorative quote glyph — light mode only via CSS */}
         <div className="quote-mark" aria-hidden="true">"</div>
 
         <div className="relative z-10 flex flex-col items-center">
-          <div className="text-[0.7rem] uppercase tracking-[0.3em] font-medium mb-16 animate-up opacity-50">
+          <div className="text-[0.7rem] uppercase tracking-[0.3em] font-medium mb-10 md:mb-16 animate-up opacity-50">
             004 / Finale
           </div>
 
-          <div className="font-serif text-[clamp(2rem,4.5vw,4rem)] font-medium leading-tight max-w-4xl mx-auto mb-16 animate-up">
+          <div className="font-serif text-[clamp(1.55rem,4.5vw,4rem)] font-medium leading-tight max-w-4xl mx-auto mb-12 md:mb-16 animate-up px-2">
             "A texture so ethereal it transcends chocolate. The depth of flavor is simply unparalleled in modern confectionery."
           </div>
 
