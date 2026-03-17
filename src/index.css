@@ -15,18 +15,30 @@
 }
 
 :root {
-  --bg-light: var(--color-brand-cream);
-  --bg-dark: var(--color-brand-dark);
-  --bg-accent: var(--color-brand-brown);
-  --text-on-light: var(--color-brand-dark);
-  --text-on-dark: var(--color-brand-cream);
+  --bg-color: var(--color-brand-dark);
+  --text-color: var(--color-brand-cream);
+  --accent-color: var(--color-brand-gold);
+  --nav-blend: difference;
+}
+
+body.light-mode {
+  --bg-color: var(--color-brand-cream);
+  --text-color: var(--color-brand-dark);
+  --accent-color: var(--color-brand-accent);
+  --nav-blend: normal;
 }
 
 body {
-  background-color: var(--bg-dark);
-  color: var(--text-on-dark);
+  background-color: var(--bg-color);
+  color: var(--text-color);
   font-family: var(--font-sans);
   overflow-x: hidden;
   margin: 0;
   padding: 0;
+  transition: background-color 0.8s ease, color 0.8s ease;
+}
+
+/* Ensure smooth transitions for specific elements */
+.transition-theme {
+  transition: background-color 0.8s ease, color 0.8s ease, border-color 0.8s ease, opacity 0.8s ease;
 }
