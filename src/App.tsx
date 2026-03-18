@@ -204,7 +204,7 @@ export default function App() {
       <section id="craft" className="section-craft animate-section py-20 md:py-48 px-6 md:px-16 grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-32 items-center transition-theme">
         <div className="order-2 md:order-1 relative aspect-[3/4] overflow-hidden w-full max-w-md mx-auto md:mr-auto">
           <img
-            src="https://picsum.photos/seed/cacao-pod/800/1200"
+            src="/imgs/farmer.jpeg"
             alt="Single Origin Cacao"
             className="w-full h-full object-cover animate-up"
           />
@@ -260,7 +260,7 @@ export default function App() {
 
         <div className="md:col-span-6 overflow-hidden aspect-[4/5] animate-up shadow-2xl">
           <img
-            src="https://picsum.photos/seed/roast-beans/1200/1500"
+            src="/imgs/roasting.jpeg"
             alt="Roasting Cacao Beans"
             className="w-full h-full object-cover"
           />
