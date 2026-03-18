@@ -387,7 +387,7 @@ export default function App() {
               001 / Introduction
             </div>
             <h1 className="hero-text-always-light font-serif text-[clamp(2.4rem,8vw,12rem)] leading-[0.85] font-bold tracking-tight">
-              PUREEEEEEEEEEE<br />
+              PURE<br />
               <span className="italic font-normal !text-brand-gold">INDULGENCE</span>
             </h1>
             <p className="hero-subtext-always-light mt-6 md:mt-12 text-xs md:text-base max-w-md mx-auto font-light tracking-wide leading-relaxed px-2">
