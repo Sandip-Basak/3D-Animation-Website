@@ -9,16 +9,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       -name: Checkout code
-        uses: actions/checkout@v4
+      uses: actions/checkout@v4
 
       -name: Deploy via SSH
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USERNAME }}
-          key: ${{ secrets.VM_SSH_KEY }}
-          script: |
-            cd /home/${{ secrets.VM_USERNAME }}/3D Animation Website
-            git pull
-            docker compose down
-            docker compose up -d --build
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.VM_HOST }}
+        username: ${{ secrets.VM_USERNAME }}
+        key: ${{ secrets.VM_SSH_KEY }}
+        script: |
+          cd /home/${{ secrets.VM_USERNAME }}/3D Animation Website
+          git pull
+          docker compose down
+          docker compose up -d --build
