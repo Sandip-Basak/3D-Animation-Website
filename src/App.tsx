@@ -5,8 +5,222 @@ import { Sun, Moon } from 'lucide-react';
 
 gsap.registerPlugin(ScrollTrigger);
 
+// ── Luxury Loading Screen ────────────────────────────────────────────────────
+function LoadingScreen({ onComplete }: { onComplete: () => void }) {
+  const rootRef = useRef<HTMLDivElement>(null);
+  const logoRef = useRef<HTMLDivElement>(null);
+  const taglineRef = useRef<HTMLDivElement>(null);
+  const progressBarRef = useRef<HTMLDivElement>(null);
+  const lineTopRef = useRef<HTMLDivElement>(null);
+  const lineBottomRef = useRef<HTMLDivElement>(null);
+  const ornamentRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const root = rootRef.current;
+    const logo = logoRef.current;
+    const tagline = taglineRef.current;
+    const bar = progressBarRef.current;
+    const lineTop = lineTopRef.current;
+    const lineBottom = lineBottomRef.current;
+    const ornament = ornamentRef.current;
+    if (!root || !logo || !tagline || !bar || !lineTop || !lineBottom || !ornament) return;
+
+    // Entrance choreography
+    const tl = gsap.timeline();
+
+    // 1. Ornamental lines draw in from center
+    tl.fromTo([lineTop, lineBottom],
+      { scaleX: 0 },
+      { scaleX: 1, duration: 1.2, ease: 'power3.inOut', stagger: 0.1 },
+      0
+    );
+
+    // 2. Diamond ornament fades in
+    tl.fromTo(ornament,
+      { opacity: 0, scale: 0.6 },
+      { opacity: 1, scale: 1, duration: 0.8, ease: 'power2.out' },
+      0.4
+    );
+
+    // 3. Logo letter-spacing reveal
+    tl.fromTo(logo,
+      { opacity: 0, letterSpacing: '0.6em', y: 10 },
+      { opacity: 1, letterSpacing: '0.35em', y: 0, duration: 1.1, ease: 'power3.out' },
+      0.5
+    );
+
+    // 4. Tagline
+    tl.fromTo(tagline,
+      { opacity: 0, y: 14 },
+      { opacity: 1, y: 0, duration: 0.9, ease: 'power2.out' },
+      0.9
+    );
+
+    // 5. Progress bar fills
+    tl.fromTo(bar,
+      { scaleX: 0 },
+      {
+        scaleX: 1,
+        duration: 2.2,
+        ease: 'power2.inOut',
+        onComplete: () => {
+          // Exit: elegant upward curtain lift
+          const exitTl = gsap.timeline({ onComplete });
+          exitTl.to([lineTop, lineBottom, ornament], {
+            opacity: 0, duration: 0.4, ease: 'power2.in'
+          }, 0);
+          exitTl.to([logo, tagline, bar], {
+            opacity: 0, y: -20, duration: 0.5, ease: 'power2.in', stagger: 0.06
+          }, 0);
+          exitTl.to(root, {
+            yPercent: -105,
+            duration: 1.0,
+            ease: 'power4.inOut'
+          }, 0.35);
+        }
+      },
+      1.4
+    );
+
+    return () => { tl.kill(); };
+  }, [onComplete]);
+
+  return (
+    <div
+      ref={rootRef}
+      style={{
+        position: 'fixed',
+        inset: 0,
+        zIndex: 9999,
+        background: 'linear-gradient(160deg, #120e0b 0%, #1e1108 50%, #0d0906 100%)',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        overflow: 'hidden',
+      }}
+    >
+      {/* Subtle noise grain overlay */}
+      <div style={{
+        position: 'absolute', inset: 0, pointerEvents: 'none', zIndex: 0,
+        backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E")`,
+        backgroundRepeat: 'repeat',
+        opacity: 0.55,
+      }} />
+
+      {/* Radial gold glow at centre */}
+      <div style={{
+        position: 'absolute',
+        top: '50%', left: '50%',
+        transform: 'translate(-50%, -50%)',
+        width: '60vmax', height: '60vmax',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(197,160,89,0.06) 0%, transparent 70%)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      {/* Ornamental top line */}
+      <div ref={lineTopRef} style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translateX(-50%) translateY(-7.5rem)',
+        width: '220px',
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, #C5A059, transparent)',
+        transformOrigin: 'center',
+        zIndex: 1,
+      }} />
+
+      {/* Diamond ornament */}
+      <div ref={ornamentRef} style={{
+        position: 'relative', zIndex: 1, marginBottom: '0.5rem',
+        display: 'flex', alignItems: 'center', gap: '0.75rem',
+      }}>
+        <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, transparent, #C5A059)' }} />
+        <div style={{
+          width: '6px', height: '6px',
+          background: '#C5A059',
+          transform: 'rotate(45deg)',
+          boxShadow: '0 0 8px rgba(197,160,89,0.6)',
+        }} />
+        <div style={{ width: '30px', height: '1px', background: 'linear-gradient(90deg, #C5A059, transparent)' }} />
+      </div>
+
+      {/* Brand logotype */}
+      <div
+        ref={logoRef}
+        style={{
+          position: 'relative', zIndex: 1,
+          fontFamily: '"Playfair Display", serif',
+          fontSize: 'clamp(2.2rem, 6vw, 3.8rem)',
+          fontWeight: 700,
+          letterSpacing: '0.35em',
+          color: '#FDFBF7',
+          textTransform: 'uppercase',
+          opacity: 0,
+          marginBottom: '0.6rem',
+        }}
+      >
+        Cavinior
+      </div>
+
+      {/* Tagline */}
+      <div
+        ref={taglineRef}
+        style={{
+          position: 'relative', zIndex: 1,
+          fontFamily: '"Outfit", sans-serif',
+          fontSize: '0.62rem',
+          fontWeight: 400,
+          letterSpacing: '0.32em',
+          textTransform: 'uppercase',
+          color: 'rgba(197,160,89,0.75)',
+          opacity: 0,
+          marginBottom: '2.5rem',
+        }}
+      >
+        Pure Indulgence · Est. 1924
+      </div>
+
+      {/* Progress bar track */}
+      <div style={{
+        position: 'relative', zIndex: 1,
+        width: '160px', height: '1px',
+        background: 'rgba(197,160,89,0.18)',
+        overflow: 'hidden',
+      }}>
+        <div
+          ref={progressBarRef}
+          style={{
+            position: 'absolute', inset: 0,
+            background: 'linear-gradient(90deg, #C5A059, #E2C78A)',
+            transformOrigin: 'left center',
+            transform: 'scaleX(0)',
+          }}
+        />
+      </div>
+
+      {/* Ornamental bottom line */}
+      <div ref={lineBottomRef} style={{
+        position: 'absolute',
+        top: '50%',
+        left: '50%',
+        transform: 'translateX(-50%) translateY(8rem)',
+        width: '220px',
+        height: '1px',
+        background: 'linear-gradient(90deg, transparent, #C5A059, transparent)',
+        transformOrigin: 'center',
+        zIndex: 1,
+      }} />
+    </div>
+  );
+}
+
 export default function App() {
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const marqueeRef = useRef<HTMLDivElement>(null);
@@ -125,6 +339,9 @@ export default function App() {
 
   return (
     <div className="selection:bg-brand-gold selection:text-brand-dark min-h-screen">
+
+      {/* ── Loading Screen ── */}
+      {isLoading && <LoadingScreen onComplete={() => setIsLoading(false)} />}
 
       {/* ── Theme Toggle ── */}
       <button
